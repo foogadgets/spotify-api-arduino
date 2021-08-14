@@ -5,15 +5,17 @@
   "authors":
   {
     "name": "Brian Lough <brian.d.lough@gmail.com>",
-    "maintainer": true
+    "maintainer": true,
+    "name": "Niclas Forslund <foogadgets@gmail.com>",
+    "maintainer": false
   },
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/witnessmenow/spotify-api-arduino"
+    "url": "https://github.com/foogadgets/spotify-api-arduino.git"
   },
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "MIT License",
   "frameworks": "arduino",
   "platforms": "*",
   "dependencies": [

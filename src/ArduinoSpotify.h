@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 // NOTE: Do not use this option on live-streams, it will reveal your
 // private tokens!
 
-#define SPOTIFY_DEBUG 1
+//#define SPOTIFY_DEBUG 1
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -36,21 +36,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #define SPOTIFY_ACCOUNTS_HOST "accounts.spotify.com"
 // Fingerprint correct as of May 6th, 2021
 #define SPOTIFY_FINGERPRINT "8D 33 E7 61 14 A0 61 EF 6F 5F D5 3C CB 1F C7 6C B8 67 69 BA"
-#define SPOTIFY_IMAGE_SERVER_FINGERPRINT "90 1F 13 F8 97 60 C3 C8 73 2B 80 6F AF C5 E6 8A 3B 95 56 E0" 
+#define SPOTIFY_IMAGE_SERVER_FINGERPRINT "90 1F 13 F8 97 60 C3 C8 73 2B 80 6F AF C5 E6 8A 3B 95 56 E0"
 #define SPOTIFY_TIMEOUT 2000
 
-#define SPOTIFY_NAME_CHAR_LENGTH 100 //Increase if artists/song/album names are being cut off
-#define SPOTIFY_URI_CHAR_LENGTH 40
-#define SPOTIFY_URL_CHAR_LENGTH 70
-
-#define SPOTIFY_DEVICE_ID_CHAR_LENGTH 45
-#define SPOTIFY_DEVICE_NAME_CHAR_LENGTH 80
-#define SPOTIFY_DEVICE_TYPE_CHAR_LENGTH 30
+#define SIZEOFACCESS 316
+#define SIZEOFREFRES 176
 
 #define SPOTIFY_CURRENTLY_PLAYING_ENDPOINT "/v1/me/player/currently-playing"
 
 #define SPOTIFY_PLAYER_ENDPOINT "/v1/me/player"
-#define SPOTIFY_DEVICES_ENDPOINT "/v1/me/player/devices"
 
 #define SPOTIFY_PLAY_ENDPOINT "/v1/me/player/play"
 #define SPOTIFY_PAUSE_ENDPOINT "/v1/me/player/pause"
@@ -63,9 +57,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 #define SPOTIFY_SEEK_ENDPOINT "/v1/me/player/seek"
 
+#define SPOTIFY_ALBUM_ENDPOINT "/v1/albums"
+
 #define SPOTIFY_TOKEN_ENDPOINT "/api/token"
 
-#define SPOTIFY_NUM_ALBUM_IMAGES 2 // Max spotify returns is 3, but the third one is probably too big for an ESP
+#define SPOTIFY_NUM_ALBUM_IMAGES 3
 
 enum RepeatOptions
 {
@@ -83,9 +79,9 @@ struct SpotifyImage
 
 struct SpotifyDevice
 {
-  char *id;
-  char *name;
-  char *type;
+  char id[41];
+  char name[41];
+  char type[20];
   bool isActive;
   bool isRestricted;
   bool isPrivateSession;
@@ -101,25 +97,21 @@ struct PlayerDetails
   RepeatOptions repeateState;
   bool shuffleState;
 
-  int statusCode;
   bool error;
 };
 
 struct CurrentlyPlaying
 {
-  char *firstArtistName;
-  char *firstArtistUri;
-  char *albumName;
-  char *albumUri;
-  char *trackName;
-  char *trackUri;
-  SpotifyImage albumImages[SPOTIFY_NUM_ALBUM_IMAGES];
-  int numImages;
+  char firstArtistName[64];
+  char firstArtistUri[64];
+  char albumName[64];
+  char albumUri[64];
+  char trackName[64];
+  char trackUri[64];
+  char imgUrl[65];
   bool isPlaying;
   long progressMs;
   long duraitonMs;
-
-  int statusCode;
   bool error;
 };
 
@@ -135,17 +127,36 @@ public:
   bool refreshAccessToken();
   bool checkAndRefreshAccessToken();
   const char *requestAccessTokens(const char *code, const char *redirectUrl);
+  const char *getAccessToken();
+  const char *getRefreshToken();
+  void setClientId(const char *clientId);
+  void setClientSecret(const char *clientSecret);
 
   // Generic Request Methods
-  int makeGetRequest(const char *command, const char *authorization, const char *accept = "application/json", const char *host = SPOTIFY_HOST);
-  int makeRequestWithBody(const char *type, const char *command, const char *authorization, const char *body = "", const char *contentType = "application/json", const char *host = SPOTIFY_HOST);
-  int makePostRequest(const char *command, const char *authorization, const char *body = "", const char *contentType = "application/json", const char *host = SPOTIFY_HOST);
-  int makePutRequest(const char *command, const char *authorization, const char *body = "", const char *contentType = "application/json", const char *host = SPOTIFY_HOST);
+  int makeGetRequest(const char *command,
+					 const char *authorization,
+					 const char *accept = "application/json",
+					 const char *host = SPOTIFY_HOST);
+  int makeRequestWithBody(const char *type,
+						  const char *command,
+						  const char *authorization,
+						  const char *body = "",
+						  const char *contentType = "application/json",
+						  const char *host = SPOTIFY_HOST);
+  int makePostRequest(const char *command,
+					  const char *authorization,
+					  const char *body = "",
+					  const char *contentType = "application/json",
+					  const char *host = SPOTIFY_HOST);
+  int makePutRequest(const char *command,
+					 const char *authorization,
+					 const char *body = "",
+					 const char *contentType = "application/json",
+					 const char *host = SPOTIFY_HOST);
 
   // User methods
-  CurrentlyPlaying getCurrentlyPlaying(const char *market = "");
-  PlayerDetails getPlayerDetails(const char *market = "");
-  int getDevices(SpotifyDevice* devices, uint8_t maxDevices);
+  CurrentlyPlaying* getCurrentlyPlaying(const char *market = "");
+  PlayerDetails* getPlayerDetails(const char *market = "");
   bool play(const char *deviceId = "");
   bool playAdvanced(char *body, const char *deviceId = "");
   bool pause(const char *deviceId = "");
@@ -157,50 +168,39 @@ public:
   bool playerControl(char *command, const char *deviceId = "", const char *body = "");
   bool playerNavigate(char *command, const char *deviceId = "");
   bool seek(int position, const char *deviceId = "");
-  bool transferPlayback(const char *deviceId, bool play = false);
+  SpotifyDevice* scanDevices();
 
   // Image methods
   bool getImage(char *imageUrl, Stream *file);
-  bool getImage(char *imageUrl, uint8_t **image, int *imageLength);
 
   int portNumber = 443;
-  uint8_t tagArraySize = 10;
-  int currentlyPlayingBufferSize = 3000;
-  int playerDetailsBufferSize = 2000;
-  int getDevicesBufferSize = 2000;
+  int tagArraySize = 10;
   bool autoTokenRefresh = true;
   Client *client;
-  void lateInit(const char *clientId, const char *clientSecret, const char *refreshToken = "");
-  void initStructs();
-  void destroyStructs();
-  SpotifyDevice* generateDevicesArray(uint8_t size);
-  void destroyDevicesArray(SpotifyDevice* devices, uint8_t size);
-#ifdef SPOTIFY_DEBUG
-  char *stack_start;
-#endif
+  struct CurrentlyPlaying currentlyPlaying;
+  struct PlayerDetails playerDetails;
 
 private:
-  char _bearerToken[200];
-  const char *_refreshToken;
-  const char *_clientId;
-  const char *_clientSecret;
+  StaticJsonDocument<2000> doc;
+  char command[125];
+  char _bearerToken[SIZEOFACCESS];
+  char _refreshToken[SIZEOFREFRES];
+  char _clientId[33];
+  char _clientSecret[33];
   unsigned int timeTokenRefreshed;
   unsigned int tokenTimeToLiveMs;
-  CurrentlyPlaying currentlyPlaying;
-  PlayerDetails playerDetails;
-  int commonGetImage(char *imageUrl);
   int getContentLength();
   int getHttpStatusCode();
   void skipHeaders(bool tossUnexpectedForJSON = true);
   void closeClient();
   void parseError();
+  void _initCurrentlyPlayingStruct();
+  void _initDeviceStruct();
   const char *requestAccessTokensBody =
-      R"(grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s)";
+      R"(grant_type=authorization_code&redirect_uri=%s&code=%s&client_id=%s&client_secret=%s)";
   const char *refreshAccessTokensBody =
       R"(grant_type=refresh_token&refresh_token=%s&client_id=%s&client_secret=%s)";
-#ifdef SPOTIFY_DEBUG
-  void printStack();
-#endif
 };
 
 #endif
+
