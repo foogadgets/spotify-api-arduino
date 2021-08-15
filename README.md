@@ -1,29 +1,17 @@
 # spotify-api-arduino
 
-![Travis CI status](https://api.travis-ci.org/witnessmenow/arduino-spotify-api.svg?branch=master)
-![License](https://img.shields.io/github/license/witnessmenow/spotify-api-arduino)
-![Release stable](https://badgen.net/github/release/witnessmenow/spotify-api-arduino/stable)  
 Arduino library for integrating with a subset of the [Spotify Web-API](https://developer.spotify.com/documentation/web-api/reference/) (Does not play music)
 
-**Work in progress library - expect changes!**
+This is a fork of the code witnessmenow/spotify-api-arduino
 
-## Supported Boards:
+![License](https://img.shields.io/github/license/witnessmenow/spotify-api-arduino)
 
-### ESP32
 
-Working well
+This fork implements some more methods and changes the way memory is allocated to avoid memory leaks.
 
+## Verified Boards:
 ### ESP8266
-
-Working well
-
-### Arduino Wifi Nina (Nano IOT etc)
-
-Unknown, there is an example that has not been tested in a while. If you get it to run feel free to let me know!
-
-## Help support what I do!
-
-I have put a lot of effort into creating Arduino libraries that I hope people can make use of. [If you enjoy my work, please consider becoming a Github sponsor!](https://github.com/sponsors/witnessmenow/)
+Working well  
 
 ## Library Features:
 
@@ -43,11 +31,6 @@ The Library supports the following features:
   - Toggle Shuffle
 - Get Devices
 
-### What needs to be added:
-
-- Better instructions for how to set up your refresh token.
-- Example where refresh token and full operation are handled in same sketch.
-
 ## Setup Instructions
 
 ### Spotify Account
@@ -66,8 +49,6 @@ Because the webserver is only needed once, I decided to seperate the logic for g
 Follow the instructions in one of the following examples to get your token.
 
 - [ESP8266](examples/esp8266/getRefreshToken/getRefreshToken.ino)
-- [ESP32](examples/esp32/getRefreshToken/getRefreshToken.ino)
-- WiFiNINA (Nano 33 IOT) - [Help needed to create an example](https://github.com/witnessmenow/arduino-spotify-api/issues/2)
 
 Note: Once you have a refresh token, you can use it on either platform in your sketches, it is not tied to any particular device.
 
