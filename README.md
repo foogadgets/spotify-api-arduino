@@ -1,11 +1,11 @@
 # spotify-api-arduino
-[![license](https://img.shields.io/github/license/doocs/advanced-java?color=42b883&style=flat-square)](./LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mui-org/material-ui/blob/master/LICENSE)
 
-Arduino library for integrating with a subset of the [Spotify Web-API](https://developer.spotify.com/documentation/web-api/reference/) (Does not play music)
+Arduino library for integrating with a subset of the [Spotify Web-API](https://developer.spotify.com/documentation/web-api/reference/) (The library is not capable to stream music)
 
-This is a fork of the code witnessmenow/spotify-api-arduino
+Forked from witnessmenow/spotify-api-arduino
 
-This fork implements some more methods and changes the way memory is allocated to avoid memory leaks.
+This fork implements additional methods and changes the way memory is allocated to avoid memory leaks.
 
 ## Verified Boards:
 ### ESP8266
