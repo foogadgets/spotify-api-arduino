@@ -1,11 +1,9 @@
 # spotify-api-arduino
+[![license](https://img.shields.io/github/license/doocs/advanced-java?color=42b883&style=flat-square)](./LICENSE)
 
 Arduino library for integrating with a subset of the [Spotify Web-API](https://developer.spotify.com/documentation/web-api/reference/) (Does not play music)
 
 This is a fork of the code witnessmenow/spotify-api-arduino
-
-![License](https://img.shields.io/github/license/witnessmenow/spotify-api-arduino)
-
 
 This fork implements some more methods and changes the way memory is allocated to avoid memory leaks.
 
